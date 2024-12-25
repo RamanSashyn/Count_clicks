@@ -4,9 +4,28 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 
-def is_shorten_link(url):
+def is_shorten_link(url, access_token):
     parsed_url = urlparse(url)
-    return parsed_url.netloc == "vk.cc"
+    if parsed_url.netloc != "vk.cc":
+        return False
+
+    key = parsed_url.path.replace("/", "")
+    url = "https://api.vk.com/method/utils.getLinkStats"
+    params = {
+        "access_token": access_token,
+        "v": "5.199",
+        "key": key,
+        "interval": "forever",
+    }
+
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+
+    response_data = response.json()
+    if "error" in response_data:
+        return False
+
+    return True
 
 
 def get_shorten_url(access_token, long_url):
@@ -72,14 +91,6 @@ def count_clicks(
         return []
 
 
-def print_clicks_info(clicks):
-    if clicks:
-        for click in clicks:
-            print(f"Переходы по ссылке: {click}")
-    else:
-        print("Нет данных по переходам.")
-
-
 def main():
     load_dotenv()
 
@@ -92,9 +103,13 @@ def main():
     long_url = input("Введите ссылку: ")
 
     try:
-        if is_shorten_link(long_url):
+        if is_shorten_link(long_url, vk_access_token):
             clicks_info = count_clicks(vk_access_token, long_url)
-            print_clicks_info(clicks_info)
+            if clicks_info:
+                for click in clicks_info:
+                    print(f"Переходы по ссылке: {click}")
+            else:
+                print("Нет данных по переходам.")
         else:
             short_url = get_shorten_url(vk_access_token, long_url)
             print("Сокращенная ссылка:", short_url)
