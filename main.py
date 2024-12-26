@@ -22,11 +22,8 @@ def is_shorten_link(url, access_token):
     response.raise_for_status()
 
     response_data = response.json()
-    if "error" in response_data:
-        return False
 
-    return True
-
+    return "error" not in response_data
 
 def get_shorten_url(access_token, long_url):
     url = "https://api.vk.com/method/utils.getShortLink"
