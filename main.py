@@ -1,5 +1,6 @@
 import os
 import requests
+import argparse
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 
@@ -97,19 +98,27 @@ def main():
         print("Переменная окружения VK_ACCESS_TOKEN не установлена.")
         return
 
-    long_url = input("Введите ссылку: ")
+    parser = argparse.ArgumentParser(
+        description='Скрипт для работы с сокращенными ссылками.'
+    )
+    parser.add_argument(
+        'url',
+        help='Ссылка, которую нужно сократить или проверить'
+    )
+    args = parser.parse_args()
+    long_url = args.url
 
     try:
         if is_shorten_link(long_url, vk_access_token):
             clicks_info = count_clicks(vk_access_token, long_url)
             if clicks_info:
                 for click in clicks_info:
-                    print(f"Переходы по ссылке: {click}")
+                    print(f"По вашей ссылке перешли {click} раз")
             else:
                 print("Нет данных по переходам.")
         else:
             short_url = get_shorten_url(vk_access_token, long_url)
-            print("Сокращенная ссылка:", short_url)
+            print(short_url)
 
     except ValueError as error:
         print(f"Ошибка: {error}")
@@ -123,3 +132,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
